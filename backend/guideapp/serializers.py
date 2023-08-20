@@ -8,7 +8,7 @@ class RegisterSerializer(serializers.Serializer):
     phone1 = serializers.IntegerField()
     phone2 = serializers.IntegerField()
     from datetime import datetime
-    date = serializers.DateField(default=datetime.now)
+    # date = serializers.DateField(default=datetime.now)
 
       
 

@@ -8,5 +8,5 @@ class Register(models.Model):
     email = models.EmailField()
     phone1 = models.IntegerField()
     phone2 = models.IntegerField()
-    from datetime import datetime
-    date = models.DateField(default=datetime.now)
+    # from datetime import datetime
+    # date = models.DateField(default=datetime.now)
