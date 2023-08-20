@@ -12,4 +12,4 @@ class Register(models.Model):
     # date = models.DateField(default=datetime.now)
     
     def __str__(self):
-        return self.key 
+        return self.username

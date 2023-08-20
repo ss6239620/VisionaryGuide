@@ -39,21 +39,21 @@ def userdatakey(request, key):
         user.delete()
         return HttpResponse(status= 202)
 
-    # # read endpoint
-    # elif request.method == 'GET':
-    #     serializer = BlogSerializer(blog)
-    #     return JsonResponse(serializer.data, safe=False)
+    # read endpoint
+    elif request.method == 'GET':
+        serializer = RegisterSerializer(user)
+        return JsonResponse(serializer.data, safe=False)
 
-    # # update endpoint
-    # elif request.method == 'PUT':
-    #     jsonData = JSONParser().parse(request)
-    #     serializer = BlogSerializer(blog, data= jsonData)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return JsonResponse(serializer.data , safe=False)
+    # update endpoint
+    elif request.method == 'PUT':
+        jsonData = JSONParser().parse(request)
+        serializer = RegisterSerializer(user, data= jsonData)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data , safe=False)
         
-    #     else:
-    #         return JsonResponse(serializer.errors , safe=False)
+        else:
+            return JsonResponse(serializer.errors , safe=False)
         
 
 
