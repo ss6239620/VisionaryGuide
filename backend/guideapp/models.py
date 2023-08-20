@@ -10,3 +10,6 @@ class Register(models.Model):
     phone2 = models.IntegerField()
     # from datetime import datetime
     # date = models.DateField(default=datetime.now)
+    
+    def __str__(self):
+        return self.key 
