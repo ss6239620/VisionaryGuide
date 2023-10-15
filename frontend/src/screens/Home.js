@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 
 import { View, Platform } from 'react-native';
 import RTMPPublisher, {
@@ -7,6 +7,8 @@ import RTMPPublisher, {
   AudioInputType,
   BluetoothDeviceStatuses,
 } from 'react-native-rtmp-publisher';
+
+import io from 'socket.io-client'
 
 import styles from './App.styles';
 
@@ -19,20 +21,56 @@ const STREAM_URL = 'rtmp://localhost:1935/live'; // ex: rtmp://a.rtmp.youtube.co
 const STREAM_NAME = 'check'; // ex: abcd-1234-abcd-1234-abcd
 
 export default function App() {
-  const publisherRef = useRef<RTMPPublisherRefProps>(null);
-  const [isStreaming, setIsStreaming] = useState<boolean>(false);
-  const [isMuted, setIsMuted] = useState<boolean>(false);
-  const [hasBluetoothDevice, setHasBluetoothDevice] = useState<boolean>(false);
-  const [microphoneModalVisibility, setMicrophoneModalVisibility] =
-    useState<boolean>(false);
+  const ws = new WebSocket("ws://127.0.0.1:8080/ws/chat/")
+  // io('http:://127.0.0.1:8080/ws/chat/')
+
+  const publisherRef = useRef(null);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [socketConnected, setSocketConnected] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [hasBluetoothDevice, setHasBluetoothDevice] = useState(false);
+  const [microphoneModalVisibility, setMicrophoneModalVisibility] = useState(false);
 
   const { permissionGranted } = usePermissions();
 
-  const handleOnConnectionFailed = (data: String) => {
+
+  // socket start here 
+  useEffect(() => {
+    // Event listener for when the connection is opened
+    ws.onopen = () => {
+      console.log('WebSocket connection opened');
+    };
+
+    // Event listener for incoming messages
+    ws.onmessage = (event) => {
+      const receivedMessage = event.data;
+      console.log('Received message: ', receivedMessage);
+      setMessage(receivedMessage);
+    };
+
+    // Event listener for errors
+    ws.onerror = (error) => {
+      console.error('WebSocket error: ', error);
+    };
+
+    return () => {
+      // Clean up by closing the WebSocket connection when the component unmounts
+      ws.close();
+    };
+  }, []);
+
+  const sendMessage = () => {
+    const messageToSend = 's';
+    ws.send(messageToSend);
+    console.log('Sent message: ', messageToSend);
+  };
+
+
+  const handleOnConnectionFailed = (data) => {
     console.log('Connection Failed: ' + data);
   };
 
-  const handleOnConnectionStarted = (data: String) => {
+  const handleOnConnectionStarted = (data) => {
     console.log('Connection Started: ' + data);
   };
 
@@ -46,11 +84,14 @@ export default function App() {
     setIsStreaming(false);
   };
 
-  const handleOnNewBitrateReceived = (data: number) => {
+  const handleOnNewBitrateReceived = (data) => {
     console.log('New Bitrate Received: ' + data);
   };
 
-  const handleOnStreamStateChanged = (data: StreamState) => {
+  const handleOnStreamStateChanged = (data) => {
+    if(data=='CONNECTING'){
+      sendMessage()
+    }
     console.log('Stream Status: ' + data);
   };
 
@@ -62,6 +103,7 @@ export default function App() {
   const handleMute = () => {
     publisherRef.current && publisherRef.current.mute();
     setIsMuted(true);
+    // sendMessage()
   };
 
   const handleStartStream = () => {
@@ -80,14 +122,11 @@ export default function App() {
     setMicrophoneModalVisibility(!microphoneModalVisibility);
   };
 
-  const handleMicrophoneSelect = (selectedMicrophone: AudioInputType) => {
-    publisherRef.current &&
-      publisherRef.current.setAudioInput(selectedMicrophone);
+  const handleMicrophoneSelect = (selectedMicrophone) => {
+    publisherRef.current && publisherRef.current.setAudioInput(selectedMicrophone);
   };
 
-  const handleBluetoothDeviceStatusChange = (
-    status: BluetoothDeviceStatuses
-  ) => {
+  const handleBluetoothDeviceStatusChange = (status) => {
     switch (status) {
       case BluetoothDeviceStatuses.CONNECTED: {
         setHasBluetoothDevice(true);
