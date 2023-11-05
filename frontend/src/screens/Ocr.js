@@ -32,35 +32,13 @@ export default function App() {
   const [microphoneModalVisibility, setMicrophoneModalVisibility] = useState(false);
 
   const { permissionGranted } = usePermissions();
+  ws.onmessage = (e) => {
+    console.log('data->',e.data)
+  }
 
-
-  // socket start here 
-  useEffect(() => {
-    // Event listener for when the connection is opened
-    ws.onopen = () => {
-      console.log('WebSocket connection opened');
-    };
-
-    // Event listener for incoming messages
-    ws.onmessage = (event) => {
-      const receivedMessage = event.data;
-      console.log('Received message: ', receivedMessage);
-      setMessage(receivedMessage);
-    };
-
-    // Event listener for errors
-    ws.onerror = (error) => {
-      console.error('WebSocket error: ', error);
-    };
-
-    return () => {
-      // Clean up by closing the WebSocket connection when the component unmounts
-      ws.close();
-    };
-  }, []);
 
   const sendMessage = () => {
-    const messageToSend = 's';
+    const messageToSend = 'start ocr';
     ws.send(messageToSend);
     console.log('Sent message: ', messageToSend);
   };
@@ -89,8 +67,8 @@ export default function App() {
   };
 
   const handleOnStreamStateChanged = (data) => {
-    if(data=='CONNECTING'){
-      // sendMessage()
+    if (data == 'CONNECTING') {
+      sendMessage()
     }
     console.log('Stream Status: ' + data);
   };
@@ -103,7 +81,6 @@ export default function App() {
   const handleMute = () => {
     publisherRef.current && publisherRef.current.mute();
     setIsMuted(true);
-    // sendMessage()
   };
 
   const handleStartStream = () => {

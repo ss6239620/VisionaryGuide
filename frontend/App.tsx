@@ -5,12 +5,15 @@ import Home from './src/screens/Home';
 import SplashScreen from './src/screens/Splash';
 import Decide from './src/screens/Decide';
 import Chatbot from './src/screens/Chatbot';
+import Ocr from './src/screens/Ocr';
 
 export type RootStackParamList = {
   Home: {};
   Splash: { streamName: string };
   Decide: { streamName: string };
   ChatBot: { streamName: string };
+  OCR: { streamName: string };
+
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -31,6 +34,7 @@ function App() {
         />
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="ChatBot" component={Chatbot} />
+        <Stack.Screen name="OCR" component={Ocr} />
       </Stack.Navigator>
     </NavigationContainer>
   );

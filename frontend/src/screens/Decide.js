@@ -133,9 +133,13 @@ const VoiceTest = ({navigation}) => {
             destroyRecognizer()
             navigation.navigate('Home')
           }
-          if(result=="start chatbot"){
+          if(result=="start"){
             destroyRecognizer()
             navigation.navigate('ChatBot')
+          }
+          if(result=="read document"){
+            destroyRecognizer()
+            navigation.navigate('OCR')
           }
       }
       )}

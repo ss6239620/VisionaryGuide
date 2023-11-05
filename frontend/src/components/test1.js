@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Image ,ScrollView} from 'react-native';
-import Voice from '@react-native-voice/voice';
-import Tts from 'react-native-tts';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, KeyboardAvoidingView, Animated, StyleSheet, Easing, Image } from 'react-native'; // Import the microphone icon from Expo
 
-const ChatScreen = () => {
+const ChatBot = () => {
     const [recognized, setRecognized] = useState('');
     const [pitch, setPitch] = useState('');
     const [error, setError] = useState('');
@@ -12,10 +10,8 @@ const ChatScreen = () => {
     const [results, setResults] = useState([]);
     const [partialResults, setPartialResults] = useState([]);
 
-    const [messages, setMessages] = useState([]);
-    const [newMessage, setNewMessage] = useState('');
-    const [data, setData] = useState({})
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(true);
+
 
     useEffect(() => {
         const onSpeechStart = (e) => {
@@ -132,48 +128,89 @@ const ChatScreen = () => {
         setLoading(false)
     }
 
-    const handleSend = () => {
-        if (newMessage.trim() === '') return;
+    const [messages, setMessages] = useState([
+        { text: 'Hi, how can I help you today?', user: false },
+        { text: 'You can start by asking me a question.', user: false },
+    ]);
+    const [isListening, setIsListening] = useState(false);
+    const scrollViewRef = useRef(null);
+    const animatedValue = useRef(new Animated.Value(1)).current;
 
-        const updatedMessages = [...messages, { text: newMessage, user: 'user' }];
-        setMessages(updatedMessages);
-        setNewMessage('');
+    const scrollToBottom = () => {
+        if (scrollViewRef.current) {
+            scrollViewRef.current.scrollToEnd({ animated: true });
+        }
     };
 
+    const handleBotResponse = () => {
+        // Simulate bot typing with a delay
+        setMessages([...messages, { text: 'Bot is typing...', user: false }]);
+        scrollToBottom();
+
+        // Simulate bot response
+        setTimeout(() => {
+            setMessages([...messages, { text: 'Hello! How can I assist you?', user: false }]);
+            scrollToBottom();
+        }, 1500);
+    };
+
+    const toggleListening = () => {
+        if (isListening) {
+            // Stop listening and handle the user's voice input
+            setIsListening(false);
+
+            // Handle user's voice input here and then trigger bot response
+            handleBotResponse();
+        } else {
+            // Start listening
+            setIsListening(true);
+
+            // Animate the button when it's clicked
+            Animated.sequence([
+                Animated.timing(animatedValue, {
+                    toValue: 1.2,
+                    duration: 100,
+                    easing: Easing.linear,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(animatedValue, {
+                    toValue: 1,
+                    duration: 100,
+                    easing: Easing.linear,
+                    useNativeDriver: true,
+                }),
+            ]).start();
+        }
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+
+        // You would typically use a voice recognition library here
+    }, [messages]);
 
     return (
         <View style={styles.container}>
-            <ScrollView style={styles.chatContainer}>
-                {/* Render chat messages here */}
+            <ScrollView ref={scrollViewRef} contentContainerStyle={styles.scrollViewContent}>
                 {messages.map((message, index) => (
-                    <View key={index} style={message.user === 'user' ? styles.userMessage : styles.partnerMessage}>
-                        <Text style={styles.messageText}>{message.text}</Text>
+                    <View key={index} style={message.user ? styles.userMessage : styles.botMessage}>
+                        <Text style={message.user ? styles.userText : styles.botText}>{message.text}</Text>
                     </View>
                 ))}
             </ScrollView>
-
-            <View style={styles.inputContainer}>
-                <TouchableOpacity style={styles.micButton} onPress={startRecognizing}>
-                    <Image style={styles.micIcon} source={require('../assets/mic.png')} />
-                </TouchableOpacity>
-                {started ?
-                    <Text style={styles.statusText}>Listening...</Text>
-                    :
-                    <Text style={styles.statusText}>Waiting...</Text>
-                }
-            </View>
-
-            <View style={styles.textInputContainer}>
-                <TextInput
-                    style={styles.input}
-                    value={newMessage}
-                    onChangeText={(text) => setNewMessage(text)}
-                    placeholder="Type your message..."
-                />
-                <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-                    <Text style={styles.sendButtonText}>Send</Text>
-                </TouchableOpacity>
-            </View>
+            <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={-30}>
+                <View style={styles.microphoneContainer}>
+                    <Animated.View
+                        style={{
+                            transform: [{ scale: animatedValue }],
+                        }}
+                    >
+                        <TouchableOpacity onPress={toggleListening}>
+                            <Image source={require('../assets/speaker.png')} style={{ width: 100, height: 100 }} />
+                        </TouchableOpacity>
+                    </Animated.View>
+                </View>
+            </KeyboardAvoidingView>
         </View>
     );
 };
@@ -181,74 +218,39 @@ const ChatScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 16,
-        backgroundColor: '#f0f0f0',
+        justifyContent: 'space-between',
     },
-    chatContainer: {
-        flex: 1,
-        marginBottom: 16,
+    scrollViewContent: {
+        paddingVertical: 20,
     },
     userMessage: {
         alignSelf: 'flex-end',
-        backgroundColor: '#3498db',
-        padding: 8,
-        borderRadius: 8,
-        marginBottom: 8,
-        maxWidth: '70%',
+        marginBottom: 10,
+        backgroundColor: '#007AFF',
+        padding: 10,
+        marginHorizontal: 20,
+        borderRadius: 10,
     },
-    partnerMessage: {
+    botMessage: {
         alignSelf: 'flex-start',
-        backgroundColor: '#e1e1e1',
-        padding: 8,
-        borderRadius: 8,
-        marginBottom: 8,
-        maxWidth: '70%',
+        marginBottom: 10,
+        backgroundColor: '#E5E5EA',
+        padding: 10,
+        marginHorizontal: 20,
+        borderRadius: 10,
     },
-    messageText: {
-        color: '#fff',
+    userText: {
+        color: 'white',
     },
-    inputContainer: {
+    botText: {
+        color: 'black',
+    },
+    microphoneContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 16,
         justifyContent: 'center',
-    },
-    micButton: {
-        backgroundColor: '#3498db',
-        borderRadius: 24,
-        padding: 16,
-    },
-    micIcon: {
-        width: 50,
-        height: 50,
-    },
-    statusText: {
-        marginLeft: 16,
-        fontSize: 16,
-    },
-    textInputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: 16,
-        justifyContent: 'center',
-    },
-    input: {
-        flex: 1,
-        backgroundColor: '#fff',
-        borderRadius: 24,
-        padding: 12,
-    },
-    sendButton: {
-        backgroundColor: '#3498db',
-        borderRadius: 24,
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-        marginLeft: 8,
-    },
-    sendButtonText: {
-        color: '#fff',
+        margin: 10,
     },
 });
 
-
-export default ChatScreen;
+export default ChatBot;

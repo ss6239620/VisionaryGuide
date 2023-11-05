@@ -1,6 +1,6 @@
 import json
 import time
-from objectml.check import main,check
+from objectml.ocr.ocr import extract_text_from_video_frame
 
 from channels.generic.websocket import WebsocketConsumer
 
@@ -13,8 +13,9 @@ class ChatConsumer(WebsocketConsumer):
         pass
 
     def receive(self, text_data):
-        if(text_data=='start detection'):
-            print(text_data)
-            main()
+        print(text_data)
+        if(text_data=='start ocr'):
+            value =  extract_text_from_video_frame()
+            self.send(value)
             
         
