@@ -137,7 +137,7 @@ const VoiceTest = ({navigation}) => {
             destroyRecognizer()
             navigation.navigate('ChatBot')
           }
-          if(result=="read document"){
+          if(result=="document"){
             destroyRecognizer()
             navigation.navigate('OCR')
           }

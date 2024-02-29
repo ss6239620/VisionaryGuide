@@ -7,6 +7,7 @@ import RTMPPublisher, {
   AudioInputType,
   BluetoothDeviceStatuses,
 } from 'react-native-rtmp-publisher';
+import Tts from 'react-native-tts';
 
 import io from 'socket.io-client'
 
@@ -34,6 +35,7 @@ export default function App() {
   const { permissionGranted } = usePermissions();
   ws.onmessage = (e) => {
     console.log('data->',e.data)
+    Tts.speak(e.data)
   }
 
 
